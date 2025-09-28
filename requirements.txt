@@ -5,3 +5,4 @@ Pillow
 requests
 Werkzeug
 PyMuPDF
+gunicorn
