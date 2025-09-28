@@ -88,7 +88,15 @@ def process_image_with_gemini(image_path: str):
     else:
         prompt = "Extract all text from this image. Preserve formatting and line breaks as accurately as possible."
         
-    process_payload = {"contents": [{"parts": [{"text": prompt}, {"inline_data": {"mime_type": "image/png", "data": base64_image}}]}]}
+    process_payload = {
+        "contents": [{
+            "role": "user",
+            "parts": [
+                {"text": prompt},
+                {"inline_data": {"mime_type": "image/png", "data": base64_image}}
+            ]
+        }]
+    }    
     result = call_gemini_api(process_payload)
     
     return result.get('text', f"Error processing image: {result.get('error', 'Unknown error')}")
@@ -120,7 +128,10 @@ def analyze_and_translate_with_gemini(text_to_analyze: str):
     prompt = f"You are an AI assistant for KMRL. First, if the following text is primarily in Malayalam, translate it to professional English. Then, using the English text, generate a JSON object that strictly adheres to the provided schema. Text to analyze: --- {text_to_analyze} ---"
     
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{
+            "role": "user",
+            "parts": [{"text": prompt}]
+        }],
         "generationConfig": {
             "response_mime_type": "application/json",
             "response_schema": json_schema
