@@ -4,3 +4,4 @@ google-generativeai==0.7.1
 Pillow==10.4.0
 python-dotenv==1.0.1
 Werkzeug==3.0.3
+gunicorn
