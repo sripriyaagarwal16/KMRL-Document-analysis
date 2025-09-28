@@ -45,18 +45,20 @@ def extract_text_from_document(file_path: str):
             return text
         except Exception as e:
             return f"Error processing PDF: {e}"
-    return "Unsupported document type."
+    return None
 
 def process_image(file_path: str):
-    """Extracts text from an image using Gemini SDK."""
+    """Handles both text extraction and diagram description using Gemini Vision."""
     image = Image.open(file_path).convert("RGB")
-    prompt = f"Extract all text from this image. Preserve formatting and line breaks as accurately as possible."
+    prompt = """
+    Analyze this image carefully:
+    - If it contains text, extract it (preserve formatting).
+    - If it is a technical/engineering/diagrammatic image, describe it in detail.
+    - Always produce an English description if text is in another language.
+    """
     model = genai.GenerativeModel(MODEL_NAME)
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.GenerationConfig()
-    )
-    return response.text
+    response = model.generate_content([prompt, image])
+    return response.text.strip()
 
 def analyze_with_gemini(text: str):
     """Analyzes text using Gemini SDK and returns JSON string."""
@@ -96,14 +98,19 @@ def analyze_with_gemini(text: str):
 
     prompt = f"""
     You are an AI assistant for KMRL.
-    - If the text is in Malayalam, translate to professional English first.
-    - Generate JSON strictly following the schema.
-    
+
+    Task:
+    - First, detect if the given text is in Malayalam. 
+    - If Malayalam → translate it to professional English.
+    - Then, summarize it clearly.
+    - Finally, generate JSON strictly following the schema.
+
     Text to analyze:
     ---
     {text}
     ---
     """
+
     model = genai.GenerativeModel(MODEL_NAME)
     response = model.generate_content(
         prompt,
@@ -135,15 +142,15 @@ def analyze_document_route():
     try:
         ext = os.path.splitext(filename)[1].lower()
         if ext in ['.png', '.jpg', '.jpeg']:
-            original_text = process_image(file_path)
+            extracted_text = process_image(file_path)
         else:
-            original_text = extract_text_from_document(file_path)
+            extracted_text = extract_text_from_document(file_path)
 
-        if not original_text or "Error" in original_text:
-            return jsonify({"error": f"Could not extract text. Reason: {original_text}"}), 500
+        if not extracted_text or "Error" in extracted_text:
+            return jsonify({"error": f"Could not extract text/description. Reason: {extracted_text}"}), 500
 
         try:
-            analysis_json_string = analyze_with_gemini(original_text)
+            analysis_json_string = analyze_with_gemini(extracted_text)
             analysis_result = json.loads(analysis_json_string)
 
             if not analysis_result.get("is_relevant"):
