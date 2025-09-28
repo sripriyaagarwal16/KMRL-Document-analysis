@@ -32,7 +32,7 @@ else:
 
 def classify_image_with_gemini(image: Image.Image):
     """Uses Gemini to classify an image as a 'document' or 'diagram'."""
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    model = genai.GenerativeModel('gemini-1.5-flash')
     prompt = "Is this image primarily a text document or an engineering/technical diagram? Answer with only the single word: 'document' or 'diagram'."
     response = model.generate_content([prompt, image])
     classification = response.text.strip().lower()
@@ -49,7 +49,7 @@ def process_image_with_gemini(image_path: str):
         image = Image.open(image_path)
         image_type = classify_image_with_gemini(image)
 
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
         if image_type == "diagram":
             print("-> Diagram identified. Generating summary...")
@@ -77,7 +77,7 @@ def extract_text_from_file_with_gemini(file_path: str):
 
         # For PDFs, upload the file and ask Gemini to read it
         uploaded_file = genai.upload_file(path=file_path)
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = "Extract all text content from this document. Maintain the original structure and paragraphs."
         response = model.generate_content([prompt, uploaded_file])
 
@@ -98,7 +98,7 @@ def analyze_and_translate_with_gemini(text_to_analyze: str):
     3. Check if the content is relevant to KMRL.
     """
     print("--- Analyzing text with Gemini ---")
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
     # Define the desired JSON output structure
     json_schema = {
